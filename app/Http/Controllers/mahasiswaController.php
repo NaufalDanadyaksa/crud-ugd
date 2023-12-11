@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\mahasiswa;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class mahasiswaController extends Controller
 {
@@ -14,14 +16,14 @@ class mahasiswaController extends Controller
     public function index(Request $request)
     {
         $katakunci = $request->katakunci;
-        $jumlahbaris=4;
-        if(strlen($katakunci)){
-            $data = mahasiswa::where('nim','like',"%$katakunci%")
-            ->orWhere('nama','like',"%$katakunci%")
-            ->orWhere('jurusan','like',"%$katakunci%")
-            ->paginate($jumlahbaris);
+        $jumlahbaris = 4;
+        if (strlen($katakunci)) {
+            $data = user::where('nim', 'like', "%$katakunci%")
+                ->orWhere('nama', 'like', "%$katakunci%")
+                ->orWhere('jurusan', 'like', "%$katakunci%")
+                ->paginate($jumlahbaris);
         } else {
-            $data = mahasiswa::orderBy('nim', 'desc')->paginate($jumlahbaris);
+            $data = user::orderBy('nim', 'desc')->paginate($jumlahbaris);
         }
         return view('mahasiswa.index')->with('data', $data);
     }
@@ -39,28 +41,41 @@ class mahasiswaController extends Controller
      */
     public function store(Request $request)
     {
-        Session::flash('nim',$request->nim);
-        Session::flash('nama',$request->nama);
-        Session::flash('jurusan',$request->jurusan);
+        Session::flash('nim', $request->nim);
+        Session::flash('name', $request->nama);
+        Session::flash('jurusan', $request->jurusan);
+        Session::flash('email', $request->email);
+        Session::flash('password', $request->password);
 
         $request->validate([
-            'nim'=>'required|numeric|unique:mahasiswa,nim',
-            'nama'=>'required',
-            'jurusan'=>'required',
-        ],[
-            'nim.required'=>'NIM wajib diisi',
-            'nim.numeric'=>'NIM wajib angka',
-            'nim.unique'=>'NIM yang diisikan sudah ada',
-            'nama.required'=>'Nama wajib diisi',
-            'jurusan.required'=>'Jurusan wajib diisi',
+            'nim' => 'required|numeric|unique:mahasiswa,nim',
+            'name' => 'required',
+            'jurusan' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:5',
+            'type' => 'required',
+        ], [
+            'nim.required' => 'NIM wajib diisi',
+            'nim.numeric' => 'NIM wajib angka',
+            'nim.unique' => 'NIM yang diisikan sudah ada',
+            'name.required' => 'Nama wajib diisi',
+            'jurusan.required' => 'Jurusan wajib diisi',
+            'email.required' => 'Email wajib diisi',
+            'email.email' => 'Email tidak valid',
+            'password.required' => 'Password wajib diisi',
+            'password.min' => 'Password minimal 5 karakter',
+            'type.required' => 'Type wajib diisi',
         ]);
         $data = [
-            'nim'=>$request->nim,
-            'nama'=>$request->nama,
-            'jurusan'=>$request->jurusan,
+            'nim' => $request->nim,
+            'name' => $request->name,
+            'jurusan' => $request->jurusan,
+            'email' => $request->email,
+            'password' => bcrypt($request->password),
+            'type' => $request->type
         ];
-        mahasiswa::create($data);
-        return redirect()->to('mahasiswa')->with('success','Berhasil menambahkan data');
+        user::create($data);
+        return redirect()->to('mahasiswa')->with('success', 'Berhasil menambahkan data');
     }
 
     /**
@@ -76,7 +91,7 @@ class mahasiswaController extends Controller
      */
     public function edit(string $id)
     {
-        $data = mahasiswa::where('nim',$id)->first();
+        $data = user::where('nim', $id)->first();
         return view('mahasiswa.edit')->with('data', $data);
     }
 
@@ -86,18 +101,39 @@ class mahasiswaController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'nama'=>'required',
-            'jurusan'=>'required',
-        ],[
-            'nama.required'=>'Nama wajib diisi',
-            'jurusan.required'=>'Jurusan wajib diisi',
+            'name' => 'required',
+            'jurusan' => 'required',
+            'profile_picture' => 'image|mimes:jpeg,png,jpg,gif|max:2048', // Adjust file types and size as needed
+        ], [
+            'nama.required' => 'Nama wajib diisi',
+            'jurusan.required' => 'Jurusan wajib diisi',
+            'profile_picture.image' => 'File harus berupa gambar',
+            'profile_picture.mimes' => 'File harus berupa jpeg, png, jpg, atau gif',
+            'profile_picture.max' => 'Maximum file size: 2MB',
         ]);
+        $imageName = time() . '.' . $request->profile_picture->extension();
+        $request->profile_picture->move(public_path('profilepicture'), $imageName);
+        $imagePath = 'profilepicture/' . $imageName;
+
         $data = [
-            'nama'=>$request->nama,
-            'jurusan'=>$request->jurusan,
+            'name' => $request->name,
+            'profile_picture' => $imagePath,
+            'jurusan' => $request->jurusan,
         ];
-        mahasiswa::where('nim',$id)->update($data);
-        return redirect()->to('mahasiswa')->with('success','Berhasil update data');
+
+        // Check if a profile picture is provided
+        // if ($request->hasFile('profile_picture')) {
+        //     // Handle file upload
+        //     $profilePicture = $request->file('profile_picture');
+        //     $path = $profilePicture->store('profile_pictures', 'public');
+
+        //     // Save the file path to the database
+        //     $data['profile_picture'] = $path;
+        // }
+
+        User::where('nim', $id)->update($data);
+
+        return redirect()->to('mahasiswa')->with('success', 'Berhasil update data');
     }
 
     /**
@@ -105,7 +141,31 @@ class mahasiswaController extends Controller
      */
     public function destroy(string $id)
     {
-        mahasiswa::where('nim', $id)->delete();
-        return redirect()->to('mahasiswa')->with('success','Berhasil melakukan delete data');
+        user::where('nim', $id)->delete();
+        return redirect()->to('mahasiswa')->with('success', 'Berhasil melakukan delete data');
+    }
+
+    public function logout()
+    {
+        Auth::guard('web')->logout();
+        return redirect()->route('login');
+    }
+
+    public function home()
+    {
+        return view('mahasiswa.index');
+    }
+
+    public function profile()
+    {
+        return view('mahasiswa.profile');
+    }
+
+    public function ResetForm(Request $request, $token = null)
+    {
+        $data = [
+            'pageTitle' => 'Reset Password',
+        ];
+        return view('mahasiswa.reset', $data)->with(['token' => $token, 'email' => $request->email]);
     }
 }
