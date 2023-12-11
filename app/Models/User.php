@@ -24,7 +24,7 @@ class User extends Authenticatable
         'nim',
         'type',
         'jurusan',
-        'img',
+        'profile_picture',
     ];
 
     /**
