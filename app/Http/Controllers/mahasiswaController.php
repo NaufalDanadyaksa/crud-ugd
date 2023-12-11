@@ -46,6 +46,7 @@ class mahasiswaController extends Controller
         Session::flash('jurusan', $request->jurusan);
         Session::flash('email', $request->email);
         Session::flash('password', $request->password);
+        // Session::flash('profile_picture', $request->profile_picture);
 
         $request->validate([
             'nim' => 'required|numeric|unique:mahasiswa,nim',
@@ -54,6 +55,7 @@ class mahasiswaController extends Controller
             'email' => 'required|email',
             'password' => 'required|min:5',
             'type' => 'required',
+            'profile_picture' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ], [
             'nim.required' => 'NIM wajib diisi',
             'nim.numeric' => 'NIM wajib angka',
@@ -65,14 +67,23 @@ class mahasiswaController extends Controller
             'password.required' => 'Password wajib diisi',
             'password.min' => 'Password minimal 5 karakter',
             'type.required' => 'Type wajib diisi',
+            'profile_picture.image' => 'File harus berupa gambar',
+            'profile_picture.mimes' => 'File harus berupa jpeg, png, jpg, atau gif',
+            'profile_picture.max' => 'Maximum file size: 2MB',
         ]);
+
+        $imageName = time() . '.' . $request->profile_picture->extension();
+        $request->profile_picture->move(public_path('profilepicture'), $imageName);
+        $imagePath = 'profilepicture/' . $imageName;
+
         $data = [
             'nim' => $request->nim,
             'name' => $request->name,
             'jurusan' => $request->jurusan,
             'email' => $request->email,
             'password' => bcrypt($request->password),
-            'type' => $request->type
+            'type' => $request->type,
+            'profile_picture' => $imagePath,
         ];
         user::create($data);
         return redirect()->to('mahasiswa')->with('success', 'Berhasil menambahkan data');

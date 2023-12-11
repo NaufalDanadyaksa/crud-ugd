@@ -3,7 +3,7 @@
 @section('konten')
 
 
-<form action='{{url('mahasiswa')}}' method='post'>
+<form action='{{url('mahasiswa')}}' method='post' enctype="multipart/form-data">
 @csrf
 <div class="my-3 p-3 bg-body rounded shadow-sm">
     <a href="{{route('mahasiswa')}}" class="btn btn-secondary"><-kembali</a>
@@ -41,6 +41,12 @@
             <input type="text" class="form-control" name='password' value="{{Session::get('password')}}" id="password">
         </div>
     </divpassword>
+    <div class="mb-3 row">
+        <label for="nama" class="col-sm-2 col-form-label">Profile Picture</label>
+        <div class="col-sm-10">
+            <input type="file" class="form-control" name='profile_picture' id="profile_picture">
+        </div>
+    </div>
     <div class="mb-3 row">
         <label for="jurusan" class="col-sm-2 col-form-label">Jurusan</label>
         <div class="col-sm-10">
