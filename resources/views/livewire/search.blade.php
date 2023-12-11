@@ -45,11 +45,5 @@
         {{-- {{$data->withQueryString()->links()}} --}}
         <a href="{{ route('logout') }}">logout</a>
     </div>
-    <div class="my-3 p-3 bg-body rounded shadow-sm">
-        <p>test</p>
-        <canvas id="myChart"></canvas>
-
-
-
-    </div>
+   
 </div>
