@@ -10,7 +10,7 @@
 
 @endphp
 
-<form action="{{url('mahasiswa/'.$data->nim)}}" method='post' enctype="multipart/form-data">
+<form action="{{url("mahasiswa/{$data->id}")}}" method='post' enctype="multipart/form-data">
 @csrf
 @method('PUT')
 <div class="my-3 p-3 bg-body rounded shadow-sm">

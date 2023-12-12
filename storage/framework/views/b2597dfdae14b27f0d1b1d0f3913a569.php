@@ -48,7 +48,7 @@
         </div>
     </div>
     <div class="mb-3 row">
-        <label for="jurusan" class="col-sm-2 col-form-label">Jurusan</label>
+        <label for="jurusan" class="col-sm-2 col-form-label">Type</label>
         <div class="col-sm-10">
             <select class="form-select" name="type" id="type">
                 <option value="1">Admin</option>

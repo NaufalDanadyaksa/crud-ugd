@@ -44,7 +44,7 @@
         <?php echo e($mahasiswa->links()); ?>
 
         
-        <a href="<?php echo e(route('logout')); ?>">logout</a>
+        <a href='<?php echo e(route('logout')); ?>' class="btn btn-danger btn-sm">Logout</a>
     </div>
    
 </div>

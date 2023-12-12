@@ -9,7 +9,7 @@
 
 ?>
 
-<form action="<?php echo e(url('mahasiswa/'.$data->nim)); ?>" method='post' enctype="multipart/form-data">
+<form action="<?php echo e(url("mahasiswa/{$data->id}")); ?>" method='post' enctype="multipart/form-data">
 <?php echo csrf_field(); ?>
 <?php echo method_field('PUT'); ?>
 <div class="my-3 p-3 bg-body rounded shadow-sm">

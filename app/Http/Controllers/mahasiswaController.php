@@ -122,10 +122,14 @@ class mahasiswaController extends Controller
             'profile_picture.mimes' => 'File harus berupa jpeg, png, jpg, atau gif',
             'profile_picture.max' => 'Maximum file size: 2MB',
         ]);
-        $imageName = time() . '.' . $request->profile_picture->extension();
-        $request->profile_picture->move(public_path('profilepicture'), $imageName);
-        $imagePath = 'profilepicture/' . $imageName;
-
+        if ($request->hasFile('profile_picture')) {
+            $imageName = time() . '.' . $request->profile_picture->extension();
+            $request->profile_picture->move(public_path('profilepicture'), $imageName);
+            $imagePath = 'profilepicture/' . $imageName;
+        } else {
+            $imagePath = null; // or provide a default value as needed
+        }
+        
         $data = [
             'name' => $request->name,
             'profile_picture' => $imagePath,
